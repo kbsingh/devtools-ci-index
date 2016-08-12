@@ -24,7 +24,7 @@
             import json, urllib, subprocess, sys
 
             url_base="http://admin.ci.centos.org:8080"
-            api=open('duffy.key').readline().strip()
+            api=open('/home/devtools_poc/duffy.key').readline().strip()
             ver="7"
             arch="x86_64"
             count=1
