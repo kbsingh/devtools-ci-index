@@ -1,5 +1,5 @@
 - job:
-    name: jjb_ci_poc
+    name: devtools-jjb_ci_poc
     description: |
         Managed by Jenkins Job Builder, do not edit manually!
     node: "devtools-ci-slave01"
