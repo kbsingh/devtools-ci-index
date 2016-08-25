@@ -39,8 +39,8 @@
             # testing out the cico client
             export CICO_API_KEY=$(cat ~/duffy.key )
             read CICO_hostname CICO_ssid <<< $(cico node get -f value -c hostname -c comment)
-            ssh_opts="-t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-            ssh_cmd="ssh ${ssh_opts} root@$${CICO_hostname}"
+            sshopts="-t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+            ssh_cmd="ssh ${sshopts} root@$${CICO_hostname}"
             test_cmd="yum -y install git && git clone {git_url} payload && cd payload && make test"
             $ssh_cmd $test_cmd
             rtn_code=$?
