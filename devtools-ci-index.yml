@@ -57,3 +57,8 @@
             git_repo: ci_poc
             ci_project: 'devtools'
             ci_cmd: '/bin/bash run_test.sh'
+        - '{ci_project}-{git_repo}':
+            git_username: kbsingh
+            git_repo: almighty-core
+            ci_project: 'devtools'
+            ci_cmd: '/bin/bash cico_run_tests.sh'
