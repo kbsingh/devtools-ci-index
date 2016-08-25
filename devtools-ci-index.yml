@@ -42,7 +42,7 @@
             sshopts="-t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
             ssh_cmd="ssh $sshopts -l root $CICO_hostname"
             git_url="https://github.com/{git_username}/{git_repo}.git"
-            test_cmd="yum -y install git && git clone $git_url payload && cd payload && run_test.sh"
+            test_cmd="yum -y install git && git clone $git_url payload && cd payload && /bin/bash run_test.sh"
             $ssh_cmd $test_cmd
             rtn_code=$?
             cico node done $CICO_ssid
