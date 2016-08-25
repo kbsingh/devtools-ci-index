@@ -1,45 +1,56 @@
-- job:
-    name: devtools-jjb_ci_poc
-    description: |
-        Managed by Jenkins Job Builder, do not edit manually!
-    node: "devtools-ci-slave01"
+- trigger:
+    name: githubprb
+    triggers:
+      - github-pull-request:
+          admin-list:
+              - kbsingh
+          cron: '* * * * *'
+          github-hooks: false
+          permit-all: false
+          trigger-phrase: '.*\[test\].*'
+          allow-whitelist-orgs-as-admins: true
+
+- scm:
+    name: git-scm
     scm:
         - git:
-            url: https://github.com/kbsingh/ci_poc
+            url: "{git_url}"
             skip-tag: True
+            git-tool: ci-git
+            refspec: '+refs/pull/*:refs/remotes/origin/pr/*'
+            branches:
+                - '${{ghprbActualCommit}}'
+
+- job-template:
+    name: '{ci_project}-{git_repo}'
+    description: |
+        Managed by Jenkins Job Builder, do not edit manually!
+    node: "{ci_project}"
+    properties:
+        - github:
+            url: https://github.com/{git_username}/{git_repo}/
+    scm:
+        - git-scm:
+            git_url: https://github.com/{git_username}/{git_repo}.git
     triggers:
-        - pollscm: "H/10 * * * *" 
+        - githubprb
     builders:
-        - python: |
-            # This script uses the Duffy node management api to get fresh machines to run
-            # your CI tests on. Once allocated you will be able to ssh into that machine
-            # as the root user and setup the environ
-            #
-            # XXX: You need to add your own api key below, and also set the right cmd= line 
-            #      needed to run the tests
-            #
-            # Please note, this is a basic script, there is no error handling and there are
-            # no real tests for any exceptions. Patches welcome!
+        - shell: |
+            # testing out the cico client
+            export CICO_API_KEY=$(cat ~/duffy.key )
+            read CICO_hostname CICO_ssid <<< $(cico node get -f value -c hostname -c comment)
+            ssh_opts="-t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+            ssh_cmd="ssh ${ssh_opts} root@$${CICO_hostname}"
+            test_cmd="yum -y install git && git clone {git_url} payload && cd payload && make test"
+            $ssh_cmd $test_cmd
+            rtn_code=$?
+            cico node done $CICO_ssid
+            exit rtn_code
 
-            import json, urllib, subprocess, sys
-
-            url_base="http://admin.ci.centos.org:8080"
-            api=open('/home/devtools_poc/duffy.key').readline().strip()
-            ver="7"
-            arch="x86_64"
-            count=1
-            git_url="https://github.com/kbsingh/ci_poc"
-
-            get_nodes_url="%s/Node/get?key=%s&ver=%s&arch=%s&i_count=%s" % (url_base,api,ver,arch,count)
-
-            dat=urllib.urlopen(get_nodes_url).read()
-            b=json.loads(dat)
-            for h in b['hosts']:
-              cmd="ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@%s 'yum -y install git && git clone %s tests && cd tests && chmod +x ./run.sh && ./run.sh'" % (h, git_url)
-              print cmd
-              rtn_code=subprocess.call(cmd, shell=True)
-            
-            done_nodes_url="%s/Node/done?key=%s&ssid=%s" % (url_base, api, b['ssid'])
-            das=urllib.urlopen(done_nodes_url).read()
-
-            sys.exit(rtn_code)
+- project:
+    name: devtools
+    jobs:
+        - '{ci_project}-{git_repo}':
+            git_username: kbsingh
+            git_repo: ci_poc
+            ci_project: 'devtools'
