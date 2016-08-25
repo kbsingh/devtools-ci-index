@@ -37,6 +37,7 @@
     builders:
         - shell: |
             # testing out the cico client
+            set +e
             export CICO_API_KEY=$(cat ~/duffy.key )
             read CICO_hostname CICO_ssid <<< $(cico node get -f value -c ip_address -c comment)
             sshopts="-t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
