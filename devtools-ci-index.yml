@@ -41,7 +41,8 @@
             read CICO_hostname CICO_ssid <<< $(cico node get -f value -c hostname -c comment)
             sshopts="-t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
             ssh_cmd="ssh $sshopts -l root $CICO_hostname"
-            test_cmd="yum -y install git && git clone {git_url} payload && cd payload && make test"
+            git_url="https://github.com/{git_username}/{git_repo}.git"
+            test_cmd="yum -y install git && git clone $git_url payload && cd payload && make test"
             $ssh_cmd $test_cmd
             rtn_code=$?
             cico node done $CICO_ssid
